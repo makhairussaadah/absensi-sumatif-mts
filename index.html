@@ -51,9 +51,9 @@
         </div>
         <div class="header-controls">
             <select id="roomSelect">
-                <option value="Ruang 1">Ruang 1 (Kelas 7)</option>
-                <option value="Ruang 2">Ruang 2 (Kelas 8)</option>
-                <option value="Ruang 3">Ruang 3 (Kelas 9)</option>
+                <option value="Ruang 1">Ruang 1</option>
+                <option value="Ruang 2">Ruang 2</option>
+                <option value="Ruang 3">Ruang 3</option>
             </select>
             <button type="button" onclick="openConfigModal()">⚙️ Konfigurasi GAS</button>
         </div>
@@ -65,9 +65,9 @@
             <div class="card">
                 <h2>📷 Pemindai Barcode / Kamera</h2>
                 <div id="reader"></div>
-                <label style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;">Atau Masukkan Nomor Ujian / NISN Manual:</label>
+                <label style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 0.5rem;">Atau Masukkan Nomor Ujian Manual:</label>
                 <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" id="manualInput" placeholder="Contoh: MTS-001" style="flex-grow: 1;">
+                    <input type="text" id="manualInput" placeholder="Contoh: 26-14-14-2-0029-2-1" style="flex-grow: 1;">
                     <button type="button" class="btn-primary" onclick="handleManualSubmit()">Cari & Absen</button>
                 </div>
             </div>
@@ -137,8 +137,29 @@
     </div>
 
     <script>
+        // Fungsi untuk membunyikan suara BEEP otomatis
+        function playBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); 
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.15); // Durasi bunyi 0.15 detik
+            } catch (e) {
+                console.log("Audio tidak didukung browser:", e);
+            }
+        }
+
         const studentsDatabase = {
-          "26-14-14-2-0029-2-1": { nama: "HAIRANI FITRI", kelas: "VIII", noUjian: "26-14-14-2-0029-2-1", ruang: "Ruang 1" },
+            "26-14-14-2-0029-2-1": { nama: "HAIRANI FITRI", kelas: "VIII", noUjian: "26-14-14-2-0029-2-1", ruang: "Ruang 1" },
             "26-14-14-2-0029-2-2": { nama: "ERLANGGA DIRGA RINTINAR", kelas: "IX", noUjian: "26-14-14-2-0029-2-2", ruang: "Ruang 1" },
             "26-14-14-2-0029-2-3": { nama: "NUR QAMARIANA SUFITRI", kelas: "VIII", noUjian: "26-14-14-2-0029-2-3", ruang: "Ruang 1" },
             "26-14-14-2-0029-2-4": { nama: "SYAFRI ZAKARIA AL MALIK", kelas: "VII", noUjian: "26-14-14-2-0029-2-4", ruang: "Ruang 1" },
@@ -254,6 +275,9 @@
                 lastCard.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">⚠️ Perhatian: ${student.nama} (${student.kelas}) sudah absen pukul ${alreadyRecorded.waktu}!</span>`;
                 return;
             }
+
+            // Bunyikan beep otomatis saat berhasil absen
+            playBeep();
 
             const record = {
                 waktu: timeNow,
